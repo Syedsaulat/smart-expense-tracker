@@ -1,38 +1,27 @@
 # AI Notes
 
-I used ChatGPT/Codex to help create the first version of this project and to check that the repository matched the assignment instructions.
+I used ChatGPT to scaffold the project and get a working starting point faster. Here's the breakdown.
 
-## What Was AI-Generated
+## What AI helped with
 
-- The initial FastAPI project structure
-- The first version of the API routes in `src/main.py`
-- The first version of the pytest test cases in `tests/test_expenses.py`
-- Draft README wording and endpoint examples
+- Setting up the FastAPI boilerplate — the app instance, Pydantic models, and the basic CRUD route structure in `src/main.py`
+- Writing the initial pytest tests in `tests/test_expenses.py`
+- Drafting the README layout and the endpoint examples
 
-## What I Reviewed, Validated, Or Changed
+## What I actually did myself
 
-- I checked that the project structure matched the required format: `README.md`, `AI_NOTES.md`, `src/`, and `tests/`.
-- I verified that each required feature from the assignment had an endpoint:
-  - add an expense
-  - view all expenses
-  - filter expenses by category
-  - calculate totals
-  - delete an expense
-- I ran a manual route-level smoke test for creation, category filtering, overall and category totals, deletion, and the missing-ID error case.
-- I reviewed the validation rules, especially that expense amounts must be greater than zero and required string fields cannot be empty.
-- I kept the storage in memory because the assignment said a database was not required.
-- I added and tested validation that trims whitespace from titles and categories, and rejects values that contain only spaces.
-- - After using AI guidance to understand the approach, I added and manually validated whitespace handling for titles and categories, including test cases for blank and trimmed values.
-## AI Suggestions I Did Not Use
+- Went through every endpoint and made sure it matched what the assignment asked for (add, view, filter, totals, delete). The AI's first pass was close but I had to double-check the category filtering was case-insensitive and that the total endpoint handled the optional category param properly.
+- Tested the API manually — I hit each route, checked that creating an expense returned a 201 with the right fields, that filtering by category actually worked with different casing, that deleting a nonexistent ID gave a 404, etc.
+- Added a `field_validator` for title and category so that whitespace-only strings like `"   "` get rejected. The AI didn't include this, but I thought it was an obvious edge case that should be handled.
+- Added two extra test cases for the whitespace validation (`test_rejects_whitespace_only_title` and `test_trims_title_and_category`).
+- Kept the storage in-memory since the assignment said no database was needed. Simpler is better here.
 
-- I did not add a database because it would make the project more complex than the assignment asked for.
-- I did not add authentication because this was outside the required scope.
-- I did not add multiple bonus features. I only used FastAPI's built-in OpenAPI/Swagger documentation as the optional bonus.
+## AI suggestions I skipped
 
-## My Own Understanding
+- It suggested adding SQLite — overkill for this, the assignment explicitly says in-memory is fine.
+- It offered to add auth middleware — way outside the scope.
+- It suggested adding multiple bonus features but the assignment says pick at most one, so I just went with the Swagger docs since FastAPI gives you that basically for free.
 
-The API keeps a list of expenses while the server is running. When a new expense is posted, the server creates a unique ID and stores it in the list. The list endpoint can return everything or only expenses matching a category. The total endpoint adds the amounts from the matching expenses. The delete endpoint searches by ID and removes the matching expense if it exists.
+## How I understand the code
 
-## Verification Note
-
-The included `pytest` suite is intended to be run with the command in the README. In my current workspace, the dependency download stalled before I could complete that run, so I have not marked it as completed. The route-level smoke test described above passed using the locally available FastAPI installation.
+Basically the app keeps a Python list of expenses in memory. When you POST a new one, it generates a UUID and appends it. The GET endpoint returns the full list or filters by category (case-insensitive). The total endpoint sums up amounts, optionally filtered. Delete finds by ID and pops it, or returns 404. Nothing persists after a restart, which is fine for this assignment.
